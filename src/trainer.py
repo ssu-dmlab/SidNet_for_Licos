@@ -56,7 +56,7 @@ def run(param):
         import time
         time.sleep(2)
         
-    torch.save(trained_model.state_dict(), param.paths.model_output_path)
+    torch.save(trained_model, param.paths.model_output_path)
     param.device = 0
     with open(param.paths.param_output_path, 'w') as out_file:
         json.dump(param, out_file)

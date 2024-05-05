@@ -8,6 +8,7 @@ import numpy as np
 from method.sidnet.model import SidNet
 import scipy.sparse as sp
 from loguru import logger
+import copy
 
 
 class SidNetTrainer(torch.nn.Module):
@@ -126,7 +127,8 @@ class SidNetTrainer(torch.nn.Module):
 
         model.train()
         pbar = tqdm(range(epochs), desc='Epoch...')
-
+        best_model = None
+        best_auc_score = float("-inf")
         for epoch in pbar:
             optimizer.zero_grad()
             loss = model(nApT=converted_data.train.nApT,
@@ -137,15 +139,21 @@ class SidNetTrainer(torch.nn.Module):
             loss.backward()
             optimizer.step()
             scheduler.step()
-
+            
+            
+            with torch.no_grad():
+                model.eval()
+                t_auc, t_f1_scores, t_loss = model.evaluate(test_edges=converted_data.test.edges,
+                                                    test_y=converted_data.test.y)
+                logger.info('val auc: {:.4f}'.format(t_auc))
+                logger.info('val f1_macro:  {:.4f}'.format(t_f1_scores.macro))
+                if best_auc_score < t_auc :
+                    best_auc_score = t_auc
+                    best_model = copy.deepcopy(model.state_dict())
+        
             pbar.set_description('Epoch {}: {:.4} train loss'.format(epoch, loss.item()))
         pbar.close()
 
-        # with torch.no_grad():
-        #     model.eval()
-        #     auc, f1_scores, loss = model.evaluate(test_edges=converted_data.test.edges,
-        #                                           test_y=converted_data.test.y)
-        #     logger.info('test auc: {:.4f}'.format(auc))
-        #     logger.info('test f1_macro:  {:.4f}'.format(f1_scores.macro))
+        
 
-        return model
+        return best_model
