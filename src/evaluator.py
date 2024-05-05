@@ -12,7 +12,8 @@ import utils
 
 
 def main(input_home='../output',
-         dataset='BITCOIN_ALPHA',
+         dataset='amazon-book',
+         dataset_num = 1,
          gpu_id=0):
     """
     Evaluate SidNet
@@ -25,8 +26,8 @@ def main(input_home='../output',
                           if (torch.cuda.is_available() and gpu_id >= 0)
                           else "cpu")
 
-    param_output_path = f'{input_home}/{dataset}/param.json'
-    model_output_path = f'{input_home}/{dataset}/model.pt'
+    param_output_path = f'{input_home}/{dataset}-{dataset_num}/param.json'
+    model_output_path = f'{input_home}/{dataset}-{dataset_num}/model.pt'
 
     with open(param_output_path, 'r') as in_file:
         param = DotMap(json.load(in_file))
@@ -42,7 +43,7 @@ def main(input_home='../output',
 
         # data = {train, test}, train = {X, y}, test = {X, y} according to heldout_ratio
         data = data_loader.load(data_path=param.data_path,
-                                heldout_ratio=param.heldout_ratio)
+                                test = True)
 
         trainer = SidNetTrainer(param)
         hyper_param = param.hyper_param

@@ -36,7 +36,7 @@ def run(param):
 
     # data = {train, test}, train = {X, y}, test = {X, y} according to heldout_ratio
     data = data_loader.load(data_path=param.data_path,
-                            heldout_ratio=param.heldout_ratio)
+                            test = False)
 
     logger.info('Start training SidNet with the hyperparameters...')
 
@@ -51,6 +51,11 @@ def run(param):
     logger.info('- Path for the trained model: {}'.format(param.paths.model_output_path))
     logger.info('- Path for the hyperparameters used in the model: {}'.format(param.paths.param_output_path))
 
+    if os.path.isdir(param.paths.model_output_path_up) == False:
+        os.makedirs(param.paths.model_output_path_up)
+        import time
+        time.sleep(2)
+        
     torch.save(trained_model.state_dict(), param.paths.model_output_path)
     param.device = 0
     with open(param.paths.param_output_path, 'w') as out_file:
@@ -59,7 +64,7 @@ def run(param):
 
 def main(data_home='../data',
          output_home='../output',
-         dataset='BITCOIN_ALPHA',
+         dataset='amazon-book',
          heldout_ratio=0.2,
          random_seed=1,
          use_torch_random_seed=True,
@@ -72,7 +77,8 @@ def main(data_home='../data',
          num_layers=1,
          hid_dim=32,
          num_diff_layers=10,
-         epochs=100):
+         epochs=100,
+         dataset_num=1):
     """
     Handle user arguments
 
@@ -106,7 +112,7 @@ def main(data_home='../data',
 
     # data parameters
     param.data_home = data_home
-    param.data_path = f'{data_home}/{dataset}/data.tsv'
+    param.data_path = f'{data_home}/{dataset}/{dataset}-{dataset_num}'
     param.dataset = dataset
     param.output_home = output_home
     param.heldout_ratio = heldout_ratio
@@ -140,10 +146,10 @@ def main(data_home='../data',
     paths = DotMap()
     paths.test_dir = f'{output_home}/{dataset}'
     for (key, path) in paths.items():
-        make_dirs(path)
-
-    paths.model_output_path = f'{output_home}/{dataset}/model.pt'
-    paths.param_output_path = f'{output_home}/{dataset}/param.json'
+        make_dirs(path) 
+    paths.model_output_path_up = f'{output_home}/{dataset}-{dataset_num}'
+    paths.model_output_path = f'{output_home}/{dataset}-{dataset_num}/model.pt'
+    paths.param_output_path = f'{output_home}/{dataset}-{dataset_num}/param.json'
     param.paths = paths
 
     # torch seed

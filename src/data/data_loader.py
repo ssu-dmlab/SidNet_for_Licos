@@ -29,7 +29,7 @@ class DataLoader(object):
         self.reduction_iterations = reduction_iterations
         self.timer = TicToc()
 
-    def load(self, data_path, heldout_ratio=0.2):
+    def load(self, data_path, test = False):
         """
         Load data and split the data into training and test.
 
@@ -38,18 +38,22 @@ class DataLoader(object):
         :return: loaded data
         """
         logger.info('Start loading the signed network...')
+        val_X = np.loadtxt(data_path+"_val.txt", dtype='int', delimiter='\t')
+        val_y = val_X[:, 2]
+        testing_X = np.loadtxt(data_path+"_test.txt", dtype='int', delimiter='\t')
+        testing_y = testing_X[:, 2]
+        
+        if test == False:
+            test_X = val_X
+            test_y = val_y
+        if test == True:
+            test_X = testing_X
+            test_y = testing_y
+        train_X = np.loadtxt(data_path+"_training.txt", dtype='int', delimiter='\t')
+        train_y = train_X[:, 2]
 
-        X = np.loadtxt(data_path, dtype='int', delimiter='\t')
-        y = X[:, 2]
-
-        num_nodes = np.amax(X[:, 0:2]) + 1
-        num_edges = X.shape[0]
-
-        train_X, test_X, train_y, test_y = train_test_split(X, y,
-                                                            test_size=heldout_ratio,
-                                                            random_state=self.random_seed)
-
-
+        num_nodes = max(np.amax(train_X[:, 0:2]) + 1, np.amax(val_X[:, 0:2]) + 1, np.amax(testing_X[:, 0:2]) + 1)
+        num_edges = train_X.shape[0] + val_X.shape[0] + testing_X.shape[0]
         logger.info('Start creating input features with random_seed: {}...'.format(self.random_seed))
         self.timer.tic()
         H = self.generate_input_features(train_X, num_nodes)
