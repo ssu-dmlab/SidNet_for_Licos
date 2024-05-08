@@ -7,17 +7,17 @@ from dotmap import DotMap
 
 os.chdir('./src')
 
-import trainer
+import src.trainer as trainer
 
 
-def main(output_home='../output_home', dataset='BITCOIN_ALPHA', gpu_id=0):
+def main(output_home='../output_home', dataset='amazon-book', gpu_id=0, dataset_num = 1):
     """
     Start training with a stored hyperparameters on the dataset
     :param output_home: home directory for output data
     :param dataset: dataset name
     :param gpu_id: gpu id
     """
-    param_path = f'../pretrained/{dataset}/param.json'
+    param_path = f'../pretrained/{dataset}-{dataset_num}/param.json'
 
     with open(param_path, 'r') as in_file:
         param = DotMap(json.load(in_file))
@@ -36,7 +36,8 @@ def main(output_home='../output_home', dataset='BITCOIN_ALPHA', gpu_id=0):
                  num_layers=param.hyper_param.num_layers,
                  hid_dim=param.hyper_param.hid_dim,
                  num_diff_layers=param.hyper_param.num_diff_layers,
-                 epochs=param.epochs)
+                 epochs=param.epochs,
+                 dataset_num=dataset_num)
 
 
 if __name__ == "__main__":
