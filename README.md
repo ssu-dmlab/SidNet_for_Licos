@@ -1,5 +1,5 @@
 # SidNet
-
+.
 This is a PyTorch implementation of **Signed Diffusion Network**.
 
 ## Overview
